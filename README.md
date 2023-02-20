@@ -1,4 +1,5 @@
 This this project is test project for Think cell interview.
+# IMPORTANT: IT HAS NOT ENOUGH TEST CASES, KEEP IT IN MIND!
 First of all, it didn't pass this:
 ```
 Correctness: Your program should produce a working interval_map
