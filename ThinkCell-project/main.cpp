@@ -131,6 +131,13 @@ public:
             std::cout << "erase right duplicates\n";
             m_map.erase(rightElementIterator);
         }
+
+        // process case when after assign we will get only a map with default values
+        // (AABBAA) -> (AAAAAA)
+        if ((m_map.size() == 1) && (m_map.begin()->second == m_valBegin))
+        {
+            m_map.erase(m_map.begin());
+        }
     }
 
     bool eq(const K &v1, const K &v2) const
@@ -332,6 +339,16 @@ TEST(testIntervalMap, testInsertShouldEraseBothSidesDuplicatesAndMapWontBeEmpty)
     imap.assign(4, 6, 'B');
     EXPECT_EQ(imap.getMapSnippet(), "[2, B][8, D][10, A]");
     EXPECT_EQ(imap.getValueSlice(0, 12), "AABBBBBBDDAA");
+}
+
+TEST(testIntervalMap, testInsertShouldMakeEmptyArray)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+
+    imap.assign(2, 4, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "");
+    EXPECT_EQ(imap.getValueSlice(0, 6), "AAAAAA");
 }
 
 
