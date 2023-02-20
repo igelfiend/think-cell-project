@@ -326,3 +326,24 @@ TEST(testIntervalMap, testInsertShouldMakeEmptyArray)
     EXPECT_EQ(imap.getMapSnippet(), "");
     EXPECT_EQ(imap.getValueSlice(0, 9), "AAAAAAAAA");
 }
+
+TEST(testIntervalMap, testInsertAbortedForIncorrectIndexesBeginIsBiggerThanEnd)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 5, 'B');
+
+    imap.assign(8, 5, 'C');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][5, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 7), "AABBBAA");
+}
+
+TEST(testIntervalMap, testInsertAbortedForIncorrectIndexesBeginAndEndIsEqual)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 5, 'B');
+
+    imap.assign(5, 5, 'C');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][5, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 7), "AABBBAA");
+}
+
