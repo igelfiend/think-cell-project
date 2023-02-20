@@ -45,15 +45,15 @@ public:
     // and assign must do nothing.
     void assign(const K &keyBegin, const K &keyEnd, const V &val)
     {
-        auto eq = [](auto v1, auto v2)
-        {
-            return (!(v1 < v2) && !(v2 < v1));
-        };
-
         if (!(keyBegin < keyEnd))
         {
             return;
         }
+
+        auto eq = [](auto v1, auto v2)
+        {
+            return (!(v1 < v2) && !(v2 < v1));
+        };
 
         auto lastValue = m_valBegin;
         auto insertIterator = m_map.lower_bound(keyBegin);;
