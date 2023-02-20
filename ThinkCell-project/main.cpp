@@ -53,7 +53,8 @@ public:
 
         Type requirements are met:
             You must adhere to the specification of the key and value type given above.
-        Correctness: Your program should produce a working interval_map with the behavior described above.
+        Correctness:
+            Your program should produce a working interval_map with the behavior described above.
             In particular, pay attention to the validity of iterators. It is illegal to dereference end iterators.
             Consider using a checking STL implementation such as the one shipped with Visual C++ or GCC.
         Canonicity:
