@@ -43,7 +43,7 @@ public:
     // includes keyBegin, but excludes keyEnd.
     // If !( keyBegin < keyEnd ), this designates an empty interval,
     // and assign must do nothing.
-    void assign(const K &keyBegin, const K &keyEnd, const V &value)
+    void assign(const K &keyBegin, const K &keyEnd, const V &val)
     {
         auto eq = [](auto v1, auto v2)
         {
@@ -83,14 +83,14 @@ public:
         if (insertIterator != m_map.begin())
         {
             auto prevInsertElementIterator = std::prev(insertIterator);
-            if (prevInsertElementIterator->second == value)
+            if (prevInsertElementIterator->second == val)
             {
                 isInsertRequired = false;
             }
         }
 
         auto rangeBeginIterator = isInsertRequired
-                ? m_map.insert(insertIterator, {keyBegin, value})
+                ? m_map.insert(insertIterator, {keyBegin, val})
                 : std::prev(insertIterator);
 
         if (isShouldFulfill)
