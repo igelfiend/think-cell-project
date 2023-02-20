@@ -78,45 +78,26 @@ public:
             }
         }
 
-
-        bool isInsertRequired = true;
-        if (insertIterator != m_map.begin())
-        {
-            auto prevInsertElementIterator = std::prev(insertIterator);
-            if (prevInsertElementIterator->second == val)
-            {
-                isInsertRequired = false;
-            }
-        }
-
-        auto rangeBeginIterator = isInsertRequired
-                ? m_map.insert(insertIterator, {keyBegin, val})
-                : std::prev(insertIterator);
-
+        m_map.insert(insertIterator, {keyBegin, val});
         if (isShouldFulfill)
         {
             m_map.insert(insertIterator, {keyEnd, lastValue});
         }
 
-        const auto &rightElementIterator = insertIterator;
-
-        // process right repeat elements
-        if (rightElementIterator->second == rangeBeginIterator->second)
+        // wipe out all duplicates
+        auto prevValue = m_valBegin;
+        for(auto it = m_map.begin(); it != m_map.end();)
         {
-            m_map.erase(rightElementIterator);
+            if (it->second == prevValue)
+            {
+                it = m_map.erase(it);
+            }
+            else
+            {
+                prevValue = it->second;
+                it++;
+            }
         }
-
-        // process case when after assign we will get only a map with default values
-        // (AABBAA) -> (AAAAAA)
-        if ((m_map.size() == 1) && (m_map.begin()->second == m_valBegin))
-        {
-            m_map.erase(m_map.begin());
-        }
-    }
-
-    bool eq(const K &v1, const K &v2) const
-    {
-        return (!(v1 < v2) && !(v2 < v1));
     }
 
     const V &operator[](const K &key) const
@@ -346,4 +327,120 @@ TEST(testIntervalMap, testInsertAbortedForIncorrectIndexesBeginAndEndIsEqual)
     EXPECT_EQ(imap.getMapSnippet(), "[2, B][5, A]");
     EXPECT_EQ(imap.getValueSlice(0, 7), "AABBBAA");
 }
+
+TEST(testIntervalMap, bunchOfSinglesRewriteAllWithDefault)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 3, 'B');
+    imap.assign(3, 4, 'C');
+    imap.assign(4, 5, 'D');
+    imap.assign(5, 6, 'E');
+
+    imap.assign(0, 10, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "");
+    EXPECT_EQ(imap.getValueSlice(0, 12), "AAAAAAAAAAAA");
+}
+
+TEST(testIntervalMap, bunchOfSinglesRewriteAllWithDefaultMoreTight)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 3, 'B');
+    imap.assign(3, 4, 'C');
+    imap.assign(4, 5, 'D');
+    imap.assign(5, 6, 'E');
+
+    imap.assign(2, 6, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "");
+    EXPECT_EQ(imap.getValueSlice(0, 12), "AAAAAAAAAAAA");
+}
+
+TEST(testIntervalMap, bunchOfSinglesRewriteAllWithNonDefault)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 3, 'B');
+    imap.assign(3, 4, 'C');
+    imap.assign(4, 5, 'D');
+    imap.assign(5, 6, 'E');
+
+    imap.assign(0, 10, 'F');
+    EXPECT_EQ(imap.getMapSnippet(), "[0, F][10, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 11), "FFFFFFFFFFA");
+}
+
+TEST(testIntervalMap, InsertDefaultsInTheMiddleOfShortIntervalsWithExtraSpaceBetween)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+    imap.assign(5, 7, 'C');
+    imap.assign(8, 10, 'D');
+    imap.assign(11, 13, 'E');
+    // AABBACCADDAEEA
+
+    imap.assign(2, 7, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "[8, D][10, A][11, E][13, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 14), "AAAAAAAADDAEEA");
+}
+
+TEST(testIntervalMap, InsertNonDefaultsInTheMiddleOfShortIntervalsWithExtraSpaceBetween)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+    imap.assign(5, 7, 'C');
+    imap.assign(8, 10, 'D');
+    imap.assign(11, 13, 'E');
+    // AABBACCADDAEEA
+
+    imap.assign(2, 8, 'D');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, D][10, A][11, E][13, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 14), "AADDDDDDDDAEEA");
+}
+
+TEST(testIntervalMap, InsertDefaultRangeInTheMiddleOfEmptySpace)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+    imap.assign(8, 10, 'D');
+
+    imap.assign(5, 7, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][4, A][8, D][10, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 12), "AABBAAAADDAA");
+}
+
+
+TEST(testIntervalMap, InsertInDefaultRangeUpToEnd)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+    imap.assign(5, 7, 'A');
+    imap.assign(8, 10, 'D');
+    imap.assign(11, 13, 'E');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][4, A][8, D][10, A][11, E][13, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 14), "AABBAAAADDAEEA");
+
+    imap.assign(5, 13, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][4, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 14), "AABBAAAAAAAAAA");
+}
+
+TEST(testIntervalMap, InsertAtTheEndDefaultsWithSomeSpace)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(2, 4, 'B');
+
+    imap.assign(5, 7, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "[2, B][4, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 8), "AABBAAAA");
+}
+
+TEST(testIntervalMap, InsertAtTheBeginDefaultsWithSomeSpace)
+{
+    interval_map<int, char> imap{'A'};
+    imap.assign(5, 7, 'B');
+
+    imap.assign(2, 4, 'A');
+    EXPECT_EQ(imap.getMapSnippet(), "[5, B][7, A]");
+    EXPECT_EQ(imap.getValueSlice(0, 8), "AAAAABBA");
+}
+
+
 
