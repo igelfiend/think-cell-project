@@ -81,7 +81,7 @@ public:
 
         auto lastValue = m_valBegin;
         auto insertIterator = first_gte_range_start;
-        bool shouldFulfill = true;
+        bool isShouldFulfill = true;
 
         while (insertIterator != m_map.end())
         {
@@ -93,7 +93,7 @@ public:
             // if we hit the end of some range- no fullfil required
             else if (insertIterator->first == keyEnd)
             {
-                shouldFulfill = false;
+                isShouldFulfill = false;
                 break;
             }
             else
@@ -101,36 +101,30 @@ public:
                 break;
             }
         }
-        auto rangeBeginIterator = m_map.insert(insertIterator, {keyBegin, value});
 
-        if (shouldFulfill)
+
+        bool isInsertRequired = true;
+        if (insertIterator != m_map.begin())
+        {
+            auto prevInsertElementIterator = std::prev(insertIterator);
+            if (prevInsertElementIterator->second == value)
+            {
+                isInsertRequired = false;
+            }
+        }
+
+        auto rangeBeginIterator = isInsertRequired
+                ? m_map.insert(insertIterator, {keyBegin, value})
+                : std::prev(insertIterator);
+
+        if (isShouldFulfill)
         {
             m_map.insert(insertIterator, {keyEnd, lastValue});
         }
 
-        auto leftElementIterator = rangeBeginIterator;
-        leftElementIterator--;
-
-        auto rightElementIterator = rangeBeginIterator;
-        rightElementIterator++;
-
-        // process left repeat elements
-        if (rangeBeginIterator != m_map.begin())
-        {
-//            auto leftElementIterator = rangeBeginIterator;
-//            leftElementIterator--;
-            if (leftElementIterator->second == rangeBeginIterator->second)
-            {
-                std::cout << "left element: " << leftElementIterator->first << " -> " << leftElementIterator->second << std::endl;
-                std::cout << "erase left duplicates\n";
-                m_map.erase(rangeBeginIterator);
-            }
-        }
+        const auto &rightElementIterator = insertIterator;
 
         // process right repeat elements
-//        auto rightElementIterator = rangeBeginIterator;
-//        rightElementIterator++;
-
         if (rightElementIterator->second == rangeBeginIterator->second)
         {
             std::cout << "right element: " << rightElementIterator->first << " -> " << rightElementIterator->second << std::endl;
