@@ -70,9 +70,9 @@ public:
             else
             {
                 if (eq(insertIterator->first, keyEnd))
-            {
-                isShouldFulfill = false;
-            }
+                {
+                    isShouldFulfill = false;
+                }
 
                 break;
             }
@@ -319,11 +319,10 @@ TEST(testIntervalMap, testInsertShouldMakeEmptyArray)
 {
     interval_map<int, char> imap{'A'};
     imap.assign(2, 4, 'B');
+    imap.assign(4, 6, 'C');
+    imap.assign(6, 8, 'D');
 
-    imap.assign(2, 4, 'A');
+    imap.assign(2, 8, 'A');
     EXPECT_EQ(imap.getMapSnippet(), "");
-    EXPECT_EQ(imap.getValueSlice(0, 6), "AAAAAA");
+    EXPECT_EQ(imap.getValueSlice(0, 9), "AAAAAAAAA");
 }
-
-
-
