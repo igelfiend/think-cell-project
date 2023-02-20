@@ -61,14 +61,14 @@ public:
                 lastValue = insertIterator->second;
                 insertIterator = m_map.erase(insertIterator);
             }
-            // if we hit the end of some range- no fullfil required
-            else if (insertIterator->first == keyEnd)
-            {
-                isShouldFulfill = false;
-                break;
-            }
+            // if we hit the end of some range - no fullfil required
             else
             {
+                if (insertIterator->first == keyEnd)
+            {
+                isShouldFulfill = false;
+            }
+
                 break;
             }
         }
