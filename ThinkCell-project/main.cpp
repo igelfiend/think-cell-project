@@ -98,8 +98,6 @@ public:
         // process right repeat elements
         if (rightElementIterator->second == rangeBeginIterator->second)
         {
-            std::cout << "right element: " << rightElementIterator->first << " -> " << rightElementIterator->second << std::endl;
-            std::cout << "erase right duplicates\n";
             m_map.erase(rightElementIterator);
         }
 
