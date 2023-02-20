@@ -45,42 +45,13 @@ public:
     // and assign must do nothing.
     void assign(const K &keyBegin, const K &keyEnd, const V &value)
     {
-//        std::cout << "from " << keyBegin << " to " << keyEnd << std::endl;
-
         if (!(keyBegin < keyEnd))
         {
-//            std::cout << "incorrect ranges, return\n";
-            return;
-        }
-
-        auto first_gte_range_end = m_map.lower_bound(keyEnd);
-        if (first_gte_range_end == m_map.begin())
-        {
-            /*
-                Handle cases:
-                    * empty map
-                    * new range goes at the beginning and not intercepts with existed one
-            */
-
-//            std::cout << "not found -> just insert default\n";
-            m_map.insert(m_map.end(), {keyBegin, value});
-            m_map.insert(m_map.end(), {keyEnd, m_valBegin});
-            return;
-        }
-
-        auto first_gte_range_start = m_map.lower_bound(keyBegin);
-        if (first_gte_range_start == m_map.end())
-        {
-            /*
-              Handles cases when new range is at the end of ranges and didnt intercepts and has extra space
-            */
-            m_map.insert(m_map.end(), {keyBegin, value});
-            m_map.insert(m_map.end(), {keyEnd, m_valBegin});
             return;
         }
 
         auto lastValue = m_valBegin;
-        auto insertIterator = first_gte_range_start;
+        auto insertIterator = m_map.lower_bound(keyBegin);;
         bool isShouldFulfill = true;
 
         while (insertIterator != m_map.end())
